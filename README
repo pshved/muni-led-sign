@@ -1,0 +1,8 @@
+Installation
+============
+
+You need Perl and Ruby.
+
+    $ sudo cpan Device::MiniLED
+    $ sudo gem install muni
+

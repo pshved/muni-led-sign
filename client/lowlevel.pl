@@ -46,6 +46,15 @@ if ($type eq 'pic') {
     speed => 5,
   );
 } elsif ($type eq 'text') {
+  my @lines = (<STDIN>);
+  my $data = $lines[0];
+  chomp $data;
+
+  $sign->addMsg(
+    data => $data,
+    effect => (length($data) > 13) ? 'scroll' : 'hold',
+    speed => 1,
+  );
 }
 
 # #
