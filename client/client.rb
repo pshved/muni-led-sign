@@ -113,12 +113,14 @@ end.parse!
 
 def text(data)
   draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=text']
-  EnhancedOpen3.open3_input_linewise(data, nil, nil, *draw)
+  print = {|line| $stderr.puts line}
+  EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
 end
 
 def pic(data)
   draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=pic']
-  EnhancedOpen3.open3_input_linewise(data, nil, nil, *draw)
+  print = {|line| $stderr.puts line}
+  EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
 end
 
 # Returns array of predictions for this stop in UTC times.  in_out is 'inbound'
