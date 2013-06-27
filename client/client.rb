@@ -113,13 +113,13 @@ end.parse!
 
 def text(data)
   draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=text']
-  print = {|line| $stderr.puts line}
+  print = proc {|line| $stderr.puts line}
   EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
 end
 
 def pic(data)
   draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=pic']
-  print = {|line| $stderr.puts line}
+  print = proc {|line| $stderr.puts line}
   EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
 end
 

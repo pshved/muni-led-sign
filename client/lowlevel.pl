@@ -15,10 +15,11 @@ use Device::MiniLED;
 my $sign=Device::MiniLED->new(devicetype => "sign");
 
 my $type = 'text';
-my $number = undef;
+my $speed = 1;
 
 my $options_result = GetOptions(
   'type=s' => \$type,
+  'speed=i' => \$type,
 );
 
 my $height = 0;
@@ -55,13 +56,13 @@ for my $message_data (@messages) {
       effect => 'hold',
       # For multiple messages, the speed seems to control transition speed in
       # multi-message mode.
-      speed => 1,
+      speed => $speed,
     );
   } else {
     $sign->addMsg(
       data => $_,
       effect => (length($_) > 13) ? 'scroll' : 'hold',
-      speed => 1,
+      speed => $speed,
     );
   }
 }
