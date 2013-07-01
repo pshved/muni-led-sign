@@ -81,6 +81,32 @@ class SimpleFont
     end
     return result
   end
+
+  # Same as render, but renders several lines (it is an array), and places them
+  # below each other.  Accepts the same options as "render," and also these:
+  #   distance: distance between lines in pixels.
+  def render_multiline(lines, line_height, opts = {})
+    line_pics = lines.map {|line| render(line, line_height, opts)}
+    line_pics.each {|lp| $stderr.puts lp.zero_one}
+    # Compose text out of lines.  Center the lines.
+    # Determine the width of the overall canvas.
+    width = line_pics.map {|img| (img.first || []).length}.max
+    # Create empty canvas
+    line_shift = line_height + (opts[:distance] || 1)
+    canvas = (1..line_shift*lines.length).map do |_|
+      (1..width).map{|_| 0}
+    end
+    # Put each line onto the canvas.
+    line_pics.each_with_index do |line_pic, line_i|
+      line_pic.each_with_index do |row, i|
+        h_shift = (width - row.length) / 2
+        row.each_with_index do |bit, j|
+          canvas[line_i*line_shift + i][h_shift + j] = bit
+        end
+      end
+    end
+    canvas
+  end
 end
 
 class Array
@@ -123,29 +149,54 @@ def pic(data)
   EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
 end
 
-# Returns array of predictions for this stop in UTC times.  in_out is 'inbound'
-# for inbound routes, or 'outbound'
+# Returns array of predictions for this route, direction, and stop in UTC times.
+# in_out is 'inbound' for inbound routes, or 'outbound'
 def get_arrival_times(route, stop, in_out)
   raise unless route and stop and in_out
   route_handler = Muni::Route.find(route)
   stop_handler = route_handler.send(in_out.to_sym).stop_at(stop)
   raise "Couldn't find stop: found '#{stop_handler.title}' for '#{stop}'" if
       stop != stop_handler.title
-  return stop_handler.predictions.map(&:epochTime).map{|t| Time.at(t.to_i / 1000)}
+  return stop_handler.predictions.map(&:time)
 end
 
-arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
-puts arrival_times.inspect
-predictions = arrival_times.map{|t| ((t - Time.now)/60).floor}
-
-predictions_str = ''
-prev = 0
-
-for t in predictions do
-  # 31 is a specific charater defined in specific.simpleglyphs
-  predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}#{t}"
-  prev = t
+# Returns hash of predictions for this stop in UTC times for all routes.  Keys
+# are route names, and values are arrays of predictions for that route at this
+# stop.
+def get_stop_arrivals(stopId)
+  raise unless stopId
+  stop = Muni::Stop.new({ :stopId => stopId })
+  return stop.predictions_for_all_routes
 end
 
-pic(sf.render("N#{predictions_str}", 8, :ignore_shift_h => true).zero_one)
+if options[:route] != 'all'
+  arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
+
+  # Render these times
+  puts arrival_times.inspect
+  predictions = arrival_times.map{|t| ((t - Time.now)/60).floor}
+
+  predictions_str = ''
+  prev = 0
+
+  for t in predictions do
+    # 31 is a specific charater defined in specific.simpleglyphs
+    predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}#{t}"
+    prev = t
+  end
+
+  pic(sf.render("N#{predictions_str}", 8, :ignore_shift_h => true).zero_one)
+else
+  arrival_times = get_stop_arrivals(options[:stop])
+  $stderr.puts arrival_times.inspect
+  texts_for_sign = []
+  arrival_times_text = arrival_times.each do |route, predictions|
+    prediction_text = predictions.slice(0,2).map(&:pretty_time).join(' & ')
+    unless prediction_text.empty?
+      texts_for_sign << sf.render_multiline([route, prediction_text], 8, :ignore_shift_h => true, :distance => 0)
+    end
+  end
+  text_for_sign = texts_for_sign.map(&:zero_one).join("\n\n")
+  pic(text_for_sign)
+end
 
