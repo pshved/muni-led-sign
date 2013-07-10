@@ -16,8 +16,8 @@ use Font::FreeType;
 my $freetype = Font::FreeType->new;
 # I have no idea how this stuff works, but this font and size 10 give 7x7
 # bitmaps!
-my $face = $freetype->face('RepetitionScrolling.ttf');
-my $sz = 10;
+my $face = $freetype->face($ARGV[0]);
+my $sz = $ARGV[1] || 10;
 $face->set_pixel_size($sz, $sz);
 
 # $face->set_char_size($sz, $sz, 100, 100);

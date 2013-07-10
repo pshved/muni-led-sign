@@ -12,7 +12,7 @@ class SimpleFont
   # Supersedes previous glyphs on clash.
   def load_glyphs(data)
     lines = data.split("\n")
-    # Whether we're anticipating a header or a next line
+    # Whether we're anticipating a glyph header or a next line of the glyph.
     mode = :need_header
     # pointer to the record we currently read
     write_to = nil
@@ -26,6 +26,8 @@ class SimpleFont
         if line.empty?
           mode = :need_header
         else
+          # This will write into @glyphs array as write_to references one of its
+          # elements.
           write_to[:bitmap] ||= []
           write_to[:bitmap] << line.split('')
         end
@@ -91,7 +93,7 @@ class SimpleFont
     # Compose text out of lines.  Center the lines.
     # Determine the width of the overall canvas.
     width = line_pics.map {|img| (img.first || []).length}.max
-    # Create empty canvas
+    # Create wide enough empty canvas.
     line_shift = line_height + (opts[:distance] || 1)
     canvas = (1..line_shift*lines.length).map do |_|
       (1..width).map{|_| 0}
@@ -117,6 +119,8 @@ end
 
 # Load generated font.
 sf = SimpleFont.new(IO.read('client/font/7x7.simpleglyphs'))
+# Load amendments to the letters I don't like.
+sf.load_glyphs(IO.read('client/font/amends.simpleglyphs'))
 # Load local, application-specific glyphs
 sf.load_glyphs(IO.read('client/font/specific.simpleglyphs'))
 
@@ -169,6 +173,20 @@ def get_stop_arrivals(stopId)
   return stop.predictions_for_all_routes
 end
 
+# Convert from Nextbus format to what it actually displayed on a minu sign.
+def fixup_route_name(route_name, prediction)
+  # For now, just truncate, except for one thing.
+  if route_name.start_with? 'KT'
+    if prediction.dirTag == 'KT__OB1'
+      'K-Ingleside'
+    else
+      'T-Third Street'
+    end
+  else
+    route_name
+  end
+end
+
 if options[:route] != 'all'
   arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
 
@@ -185,15 +203,18 @@ if options[:route] != 'all'
     prev = t
   end
 
-  pic(sf.render("N#{predictions_str}", 8, :ignore_shift_h => true).zero_one)
+  pic(sf.render("#{options[:route]}#{predictions_str}", 8, :ignore_shift_h => true).zero_one)
 else
   arrival_times = get_stop_arrivals(options[:stop])
   $stderr.puts arrival_times.inspect
   texts_for_sign = []
   arrival_times_text = arrival_times.each do |route, predictions|
-    prediction_text = predictions.slice(0,2).map(&:pretty_time).join(' & ')
+    # Show first two predictions
+    prediction_text = predictions.slice(0,2).map(&:muni_time).join(' & ')
     unless prediction_text.empty?
-      texts_for_sign << sf.render_multiline([route, prediction_text], 8, :ignore_shift_h => true, :distance => 0)
+      # Fixup route name.
+      route_name = fixup_route_name(route, predictions[0])
+      texts_for_sign << sf.render_multiline([route_name, prediction_text], 8, :ignore_shift_h => true, :distance => 0)
     end
   end
   text_for_sign = texts_for_sign.map(&:zero_one).join("\n\n")
