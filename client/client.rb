@@ -174,17 +174,25 @@ def get_stop_arrivals(stopId)
 end
 
 # Convert from Nextbus format to what it actually displayed on a minu sign.
+# Ordered list of regexp -> string pairs.  The first regexp to match a
+# prediction's dirTag field replaces the route name with the string.
+ROUTE_FIXUP_MAP = [
+  [ /^KT.*OB/, 'K-Ingleside'],
+  [ /^KT.*IBMTME/, 'T-Metro East Garage'],
+  # Let's all all inbound KT-s like this.
+  [ /^KT.*IB/, 'T-Third Street'],
+]
 def fixup_route_name(route_name, prediction)
   # For now, just truncate, except for one thing.
-  if route_name.start_with? 'KT'
-    if prediction.dirTag == 'KT__OB1'
-      'K-Ingleside'
-    else
-      'T-Third Street'
+  unstripped_result = route_name
+  ROUTE_FIXUP_MAP.each do |regex, fixup|
+    if regex =~ prediction.dirTag
+      unstripped_result = fixup
+      break
     end
-  else
-    route_name
   end
+  # Strip result
+  unstripped_result.slice(0, 16)
 end
 
 if options[:route] != 'all'
