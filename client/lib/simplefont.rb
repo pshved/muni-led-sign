@@ -89,7 +89,7 @@ class SimpleFont
   #   distance: distance between lines in pixels.
   def render_multiline(lines, line_height, opts = {})
     line_pics = lines.map {|line| render(line, line_height, opts)}
-    line_pics.each {|lp| $stderr.puts lp.zero_one}
+    # Used for debugging.  line_pics.each {|lp| $stderr.puts lp.zero_one}
     # Compose text out of lines.  Center the lines.
     # Determine the width of the overall canvas.
     width = line_pics.map {|img| (img.first || []).length}.max

@@ -1,7 +1,10 @@
+# Ruby interface to Muni sign.  Relied on a perl wrapper over the official Perl
+# API.
 require_relative 'enhanced_open3'
 
 class LED_Sign
   def self.text(data)
+    # TODO: get rid of hardcoded path!
     draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=text']
     print = proc {|line| $stderr.puts line}
     EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
