@@ -33,7 +33,7 @@ def get_arrival_times(route, stop, in_out)
   return stop_handler.predictions.map(&:time)
 end
 
-def update_sign
+def update_sign(font, options)
   arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
 
   # Render these times
