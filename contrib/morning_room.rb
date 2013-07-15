@@ -53,7 +53,11 @@ def update_sign(font, options)
 end
 
 while true
-  update_sign(font, options)
+  begin
+    update_sign(font, options)
+  rescue => e
+    $stderr.puts "Well, we continue despite this error: #{e}"
+  end
   sleep(options[:update_interval])
 end
 
