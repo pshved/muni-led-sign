@@ -56,7 +56,7 @@ while true
   begin
     update_sign(font, options)
   rescue => e
-    $stderr.puts "Well, we continue despite this error: #{e}"
+    $stderr.puts "Well, we continue despite this error: #{e}\n#{e.backtrace.join("\n")}"
   end
   sleep(options[:update_interval])
 end
