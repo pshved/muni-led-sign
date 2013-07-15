@@ -20,6 +20,11 @@ OptionParser.new do |opts|
   opts.on('--stop [STOP_NAME]', "Stop to watch") {|v| options[:stop] = v}
   opts.on('--timing MINUTES', Integer, "Warn if distance is longer than this.") {|v| options[:bad_timing] = v}
   opts.on('--update-interval SECONDS', Integer, "Update sign each number of seconds") {|v| options[:update_interval] = v}
+
+  # Backup route
+  opts.on('--backup-route [ROUTE]', "Route to get predictions for on 2nd line (3 predictions only)") {|v| options[:route2] = v}
+  opts.on('--backup-direction [inbound/outbound]', "2nd line route direction") {|v| options[:direction2] = v}
+  opts.on('--backup-stop [STOP_NAME]', "2nd line stop to watch") {|v| options[:stop2] = v}
 end.parse!
 
 # Returns array of predictions for this route, direction, and stop in UTC times.
@@ -34,22 +39,35 @@ def get_arrival_times(route, stop, in_out)
 end
 
 def update_sign(font, options)
-  arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
-
   # Render these times
-  puts arrival_times.inspect
-  predictions = arrival_times.map{|t| ((t - Time.now)/60).floor}
+  def prediction_string(arrival_times, options)
+    puts arrival_times.inspect
+    predictions = arrival_times.map{|t| ((t - Time.now)/60).floor}
 
-  predictions_str = ''
-  prev = 0
+    predictions_str = ''
+    prev = 0
 
-  for t in predictions do
-    # 31 is a specific charater defined in specific.simpleglyphs
-    predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}#{t}"
-    prev = t
+    for t in predictions do
+      # 31 is a specific charater defined in specific.simpleglyphs
+      predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}#{t}"
+      prev = t
+    end
+
+    return predictions_str
   end
 
-  LED_Sign.pic(font.render("#{options[:route]}#{predictions_str}", 8, :ignore_shift_h => true).zero_one)
+  arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
+  line1 = "#{options[:route]}#{prediction_string(arrival_times, options)}"
+
+  if options[:route2]
+    arrival_times = get_arrival_times(options[:route2], options[:stop2], options[:direction2])
+    arrival_times = arrival_times.slice(0, 3)
+    line2 = "#{options[:route2]}#{prediction_string(arrival_times, options)}"
+  else
+    line2 = ""
+  end
+
+  LED_Sign.pic(font.render_multiline([line1, line2], 8, :ignore_shift_h => true, :distance => 0).zero_one)
 end
 
 while true
