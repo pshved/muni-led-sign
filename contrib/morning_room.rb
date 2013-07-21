@@ -46,10 +46,16 @@ def update_sign(font, options)
 
     predictions_str = ''
     prev = 0
+    first = true
 
     for t in predictions do
+      # Add ellipsis between predictions if distance's too long.
       # 31 is a specific charater defined in specific.simpleglyphs
-      predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}#{t}"
+      if not first
+        predictions_str << "#{((t-prev) >= options[:bad_timing])? 128.chr : '-'}"
+      end
+      first = false
+      predictions_str << "#{t}"
       prev = t
     end
 
@@ -57,12 +63,12 @@ def update_sign(font, options)
   end
 
   arrival_times = get_arrival_times(options[:route], options[:stop], options[:direction])
-  line1 = "#{options[:route]}#{prediction_string(arrival_times, options)}"
+  line1 = "#{options[:route]}:#{prediction_string(arrival_times, options)}"
 
   if options[:route2]
     arrival_times = get_arrival_times(options[:route2], options[:stop2], options[:direction2])
     arrival_times = arrival_times.slice(0, 3)
-    line2 = "#{options[:route2]}#{prediction_string(arrival_times, options)}"
+    line2 = "#{options[:route2]}:#{prediction_string(arrival_times, options)}"
   else
     line2 = ""
   end
