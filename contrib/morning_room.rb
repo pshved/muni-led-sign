@@ -92,9 +92,10 @@ def update_sign(font, options)
     time_index = doc['data'].first['time-layout'].first['start-valid-time'].find_index {|t| t =~ /T#{hour}/ }
     # Now find the actual temperature at that hour.
     weather_later = doc['data'].first['parameters'].first['temperature'].first['value'][time_index]
+    # And the current temperature, too (it's in the first cell).
     weather_now = doc['data'].first['parameters'].first['temperature'].first['value'][0]
 
-    weather_str = "#{130.chr}#{weather_now}/#{weather_later}"
+    weather_str = "#{130.chr}#{weather_now}#{129.chr}#{weather_later}"
   rescue => e
     # We rescue on various key errors, and inavailability.  Turn this on for
     # debugging.
