@@ -6,11 +6,14 @@
 require 'optparse'
 require_relative '../client/lib'
 
+require 'xmlsimple'
+
 font = muni_sign_font(File.join(File.dirname(__FILE__), '..', 'client', 'font'))
 
 options = {
   :bad_timing => 13,
   :update_interval => 30,
+  :weather_hour => 19,
 }
 OptionParser.new do |opts|
   opts.banner = "Usage: morning_room.rb --route F --direction inbound --stop 'Ferry Building'"
@@ -25,6 +28,10 @@ OptionParser.new do |opts|
   opts.on('--backup-route [ROUTE]', "Route to get predictions for on 2nd line (3 predictions only)") {|v| options[:route2] = v}
   opts.on('--backup-direction [inbound/outbound]', "2nd line route direction") {|v| options[:direction2] = v}
   opts.on('--backup-stop [STOP_NAME]', "2nd line stop to watch") {|v| options[:stop2] = v}
+
+  #Weather
+  opts.on('--weather-url [URL]', "The url from weather.gov to fetch a weather from.  Click on Tabular Weather, and choose XML.") {|v| options[:weather_xml] = v}
+  opts.on('--weather-hour [HOUR]', "Hour of the day (0..23) to get the weather of") {|v| options[:weather_hour] = v}
 end.parse!
 
 # Returns array of predictions for this route, direction, and stop in UTC times.
@@ -72,6 +79,30 @@ def update_sign(font, options)
   else
     line2 = ""
   end
+
+  # Get weather.
+  if options[:weather_xml]; begin
+    # Load forecast.  TODO: add throttling (it hardly changes every 30 seconds).
+    url = options[:weather_xml]
+    xml = Net::HTTP.get(URI.parse(url))
+    doc =  XmlSimple.xml_in(xml)
+    # Pad hour with zero.
+    hour = sprintf("%2d", options[:weather_hour])
+    # Find table cell index that represents the hour we're interested in.
+    time_index = doc['data'].first['time-layout'].first['start-valid-time'].find_index {|t| t =~ /T#{hour}/ }
+    # Now find the actual temperature at that hour.
+    weather_later = doc['data'].first['parameters'].first['temperature'].first['value'][time_index]
+    weather_now = doc['data'].first['parameters'].first['temperature'].first['value'][0]
+
+    weather_str = "#{130.chr}#{weather_now}/#{weather_later}"
+  rescue => e
+    # We rescue on various key errors, and inavailability.  Turn this on for
+    # debugging.
+    # $stderr.puts "Weather error received: #{e}\n#{e.backtrace.join("\n")}"
+    weather_str = 'E'
+  end; end
+
+  line2 << " #{weather_str}"
 
   LED_Sign.pic(font.render_multiline([line1, line2], 8, :ignore_shift_h => true, :distance => 0).zero_one)
 end
