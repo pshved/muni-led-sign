@@ -16,6 +16,12 @@ class LED_Sign
     EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
   end
   
+  # Sign dimensions (to aid in text formatting).
+  # The sign I have has a peculiarity that if the picture width is about ~50px,
+  # then it aligns the text a bit to the left.  We'll need the width to render
+  # the text up to it.
+  SCREEN_WIDTH = 96
+  SCREEN_HEIGHT = 16
 end
 
 # Supply Array with a conversion function that makes input to LED_Sign.pic out

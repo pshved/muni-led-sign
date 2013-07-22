@@ -105,7 +105,7 @@ def update_sign(font, options)
 
   line2 << " #{weather_str}"
 
-  LED_Sign.pic(font.render_multiline([line1, line2], 8, :ignore_shift_h => true, :distance => 0).zero_one)
+  LED_Sign.pic(font.render_multiline([line1, line2], 8, :ignore_shift_h => true, :distance => 0, :fixed_width => LED_Sign::SCREEN_WIDTH).zero_one)
 end
 
 while true

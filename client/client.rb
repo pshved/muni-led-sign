@@ -58,7 +58,7 @@ def update_sign(font, options)
     unless prediction_text.empty?
       # Fixup route name.
       route_name = fixup_route_name(route, predictions[0])
-      texts_for_sign << font.render_multiline([route_name, prediction_text], 8, :ignore_shift_h => true, :distance => 0)
+      texts_for_sign << font.render_multiline([route_name, prediction_text], 8, :ignore_shift_h => true, :distance => 0, :fixed_width => LED_Sign::SCREEN_WIDTH)
     end
   end
   text_for_sign = texts_for_sign.map(&:zero_one).join("\n\n")

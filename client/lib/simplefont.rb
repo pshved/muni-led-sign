@@ -37,7 +37,10 @@ class SimpleFont
 
   # Render string given the max height above the baseline.  Returns rectangular
   # array, starting from top-left corner.
-  # Opts: ignore_shift_h - whether to ignore shift_h read from the font.
+  # Opts: 
+  #   ignore_shift_h - whether to ignore shift_h read from the font.
+  #   fixed_width - make the width exactly this, cropping or pannin the text to
+  #                 it.
   def render(string, height, opts = {})
     # We'll store, temporarily, bits in buf hash, where hash[[i,j]] is a bit i
     # points up, and j points right from the start of the baseline. 
@@ -70,13 +73,26 @@ class SimpleFont
       result[row] ||= []
       result[row][col] = bit
     end
+    # Update width from mere maximum width to preset width if any.
+    text_width = width
+    image_width = opts[:fixed_width] || width
     # Fill nil-s with zeroes.
     result.map! do |row|
       expanded_row = row || []
-      # Expand row up to width.
-      if expanded_row.size < width
-        expanded_row[width] = nil
-        expanded_row.pop
+      # First, the row may be incomplete, lacking space to the left.  Pan it to
+      # text_width, if necessary.
+      if expanded_row.size < text_width
+        expanded_row += [0] * (text_width - expanded_row.size)
+      end
+      # Expand (or crop) row up to width.  Check how much we should *remove*.
+      slice_total = expanded_row.size - image_width
+      # How much to slice, slice more from the right.
+      slice_l = (slice_total.to_f / 2).floor
+      if slice_total < 0
+        # We don't remove, we add!
+        expanded_row = [0] * (-slice_l) + expanded_row + [0] * (-slice_total+slice_l)
+      elsif slice_total > 0
+        expanded_row = expanded_row.slice(slice_l, image_width)
       end
       # Replace nil-s in this row with zeroes.
       expanded_row.map{|bit| bit || 0}
