@@ -95,7 +95,25 @@ def update_sign(font, options)
     # And the current temperature, too (it's in the first cell).
     weather_now = doc['data'].first['parameters'].first['temperature'].first['value'][0]
 
-    weather_str = "#{130.chr}#{weather_now}#{129.chr}#{weather_later}"
+    # Get rain conditions
+    begin
+      conditions = doc['data'].first['parameters'].first['weather'].first['weather-conditions'][time_index]
+      rain = (conditions['value'] || []).find {|c| c['weather-type'] == 'rain'}
+      if rain
+        coverage_map = {
+          # Todo: uncover more rainfall phrases!
+          'slight chance' => 141.chr,
+          'chance' => 143.chr,
+          'likely' => 146.chr,
+        }
+        rain_str = coverage_map[rain['coverage']]
+      end
+    rescue => e
+      $stderr.puts "Weather error received: #{e}\n#{e.backtrace.join("\n")}"
+      rain_str = ''
+    end
+
+    weather_str = "#{130.chr}#{weather_now}#{129.chr}#{weather_later}#{rain_str}"
   rescue => e
     # We rescue on various key errors, and inavailability.  Turn this on for
     # debugging.
