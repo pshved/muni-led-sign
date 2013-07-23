@@ -106,7 +106,9 @@ def update_sign(font, options)
           'chance' => 143.chr,
           'likely' => 146.chr,
         }
-        rain_str = coverage_map[rain['coverage']]
+        # Display "?" if the rainfall string is not recognized (otherwise I'd
+        # not see that there's a chance of rain in such cases).
+        rain_str = coverage_map[rain['coverage'] || "?"]
       end
     rescue => e
       $stderr.puts "Weather error received: #{e}\n#{e.backtrace.join("\n")}"
