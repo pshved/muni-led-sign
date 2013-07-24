@@ -7,3 +7,7 @@ You need Perl and Ruby 1.9 with gem command.
     $ sudo cpan Device::MiniLED
     $ gem install --user-install ./vendor/muni-0.0.6.gem
 
+To run on startup:
+    $ sudo cp contrib/munisign /etc/init.d
+    $ sudo update-rc.d munisign defaults
+
