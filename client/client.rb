@@ -61,7 +61,12 @@ def update_sign(font, options)
       texts_for_sign << font.render_multiline([route_name, prediction_text], 8, :ignore_shift_h => true, :distance => 0, :fixed_width => LED_Sign::SCREEN_WIDTH)
     end
   end
-  text_for_sign = texts_for_sign.map(&:zero_one).join("\n\n")
+  if texts_for_sign && !texts_for_sign.empty?
+    text_for_sign = texts_for_sign.map(&:zero_one).join("\n\n")
+  else
+    # Empty predictions array: this may be just nighttime.
+    text_for_sign = font.render_multiline(["No routes", "until next morning."], 8, :ignore_shift_h => true, :distance => 0, :fixed_width => LED_Sign::SCREEN_WIDTH).zero_one
+  end
   LED_Sign.pic(text_for_sign)
 end
 
