@@ -3,15 +3,15 @@
 require_relative 'enhanced_open3'
 
 class LED_Sign
+  SCRIPT = File.join(File.dirname(__FILE__), '..', '..', 'client', 'lowlevel.pl')
   def self.text(data)
-    # TODO: get rid of hardcoded path!
-    draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=text']
+    draw = ['/usr/bin/perl', SCRIPT, '--type=text']
     print = proc {|line| $stderr.puts line}
     EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
   end
 
   def self.pic(data)
-    draw = ['/usr/bin/perl', 'client/lowlevel.pl', '--type=pic']
+    draw = ['/usr/bin/perl', SCRIPT, '--type=pic']
     print = proc {|line| $stderr.puts line}
     EnhancedOpen3.open3_input_linewise(data, print, print, *draw)
   end
