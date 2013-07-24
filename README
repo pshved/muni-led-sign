@@ -1,8 +1,9 @@
 Installation
 ============
 
-You need Perl and Ruby.
+You need Perl and Ruby 1.9 with gem command.
 
+    $ sudo apt-get install ruby1.9 gem1.9
     $ sudo cpan Device::MiniLED
-    $ sudo gem install muni
+    $ gem install --user-install ./vendor/muni-0.0.6.gem
 
