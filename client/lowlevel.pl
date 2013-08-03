@@ -27,13 +27,14 @@ my $data = '';
 my @messages = ();
 while (<STDIN>) {
   chomp;
-  if ($_) {
+  # Don't let perl treat a string of a single 0 as false!
+  if (length($_) > 0) {
     $height ++;
     $data .= $_;
   }
-  if (!$_ or eof(STDIN)) {
+  if (length($_) == 0 or eof(STDIN)) {
     # Add message if we have some.
-    push @messages, {data => $data, height => $height} if ($data);
+    push @messages, {data => $data, height => $height} if length($data);
     $height = 0;
     $data = '';
   }
