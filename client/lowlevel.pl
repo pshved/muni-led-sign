@@ -61,8 +61,8 @@ for my $message_data (@messages) {
     );
   } else {
     $sign->addMsg(
-      data => $_,
-      effect => (length($_) > 13) ? 'scroll' : 'hold',
+      data => $message_data->{data},
+      effect => (length($message_data->{data}) > 13) ? 'scroll' : 'hold',
       speed => $speed,
     );
   }
