@@ -48,7 +48,7 @@ def fixup_route_name(route_name, prediction)
     end
   end
   # Strip result
-  unstripped_result.slice(0, 16)
+  unstripped_result.slice(0, 18)
 end
 
 def update_sign(font, options)
