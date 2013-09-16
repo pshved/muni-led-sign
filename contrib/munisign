@@ -4,6 +4,11 @@
 # If your user is 'pi', will write pidfile to ~pi/.munisign.pid.
 set -e
 
+USER=pi
+USER_DIR="/home/$USER"
+PIDFILE=$USER_DIR/.munisign.pid
+ERROR_FILE=/tmp/null
+
 # Replace with your data--or with a different script!
 SCRIPT="$USER_DIR/sign/src/contrib/morning_room.rb"
 declare -a SIGN_OPTIONS=(\
@@ -17,10 +22,11 @@ declare -a SIGN_OPTIONS=(\
 # SCRIPT="$USER_DIR/sign/src/client/client.rb"
 # declare -a SIGN_OPTIONS=( --update-interval 30 --stopId 16995 )
 
-USER=pi
-USER_DIR="/home/$USER"
-PIDFILE=$USER_DIR/.munisign.pid
-ERROR_FILE=/dev/null
+# Darken the sign based on whether a specific file exists.
+DARK_FILE=/tmp/muni-$USER-dark
+SIGN_OPTIONS+=(--dark-file "$DARK_FILE")
+# Require the file to be under an active update.
+rm -f "$DARK_FILE"
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 

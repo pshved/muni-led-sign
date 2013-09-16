@@ -1,0 +1,52 @@
+#!/bin/bash
+# Daemon to watch for light sensor and update the file if it's too dark.
+#
+# If your user is 'pi', will write pidfile to ~pi/.munisign.lightsensor.pid
+set -e
+
+USER=pi
+USER_DIR="/home/$USER"
+# Replace with your data--or with a different script!
+SCRIPT="$USER_DIR/sign/src/contrib/lightsense.rb"
+USER=pi
+DARK_FILE=/tmp/muni-$USER-dark
+# File to read a stream of numbers from.
+DEVICE=/dev/ttyUSB1
+# If the value is less, touch the DARK_FILE
+THRESHOLD=100
+
+declare -a SCRIPT_OPTIONS=(\
+  --file "$DARK_FILE" \
+  --threshold "$THRESHOLD" \
+  "$DEVICE" \
+  )
+
+PIDFILE=$USER_DIR/.munisign.darkfile.pid
+ERROR_FILE=/dev/null
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+    start)
+        echo "Starting light sensor watch"
+	start-stop-daemon --start --chdir "$USER_DIR" --quiet --chuid "$USER" --pidfile "$PIDFILE" --make-pidfile \
+		--exec "$SCRIPT" -- "${SCRIPT_OPTIONS[@]}" >/dev/null 2>$ERROR_FILE &
+	;;
+    stop)
+        echo "Stopping light sensor watch"
+	start-stop-daemon --stop --chdir "$USER_DIR" --quiet --chuid "$USER" --oknodo --pidfile "$PIDFILE"
+	;;
+    restart)
+        echo "Restarting light sensor watch"
+	start-stop-daemon --stop --chdir "$USER_DIR" --quiet --chuid "$USER" --oknodo --retry 30 --pidfile "$PIDFILE"
+	start-stop-daemon --start --chdir "$USER_DIR" --quiet --chuid "$USER" --pidfile "$PIDFILE" --make-pidfile \
+		--exec "$SCRIPT" -- "${SIGN_OPTIONS[@]}" >/dev/null 2>$ERROR_FILE &
+	;;
+
+    *)
+	echo "Usage: "$0" {start|stop|restart}"
+	exit 1
+esac
+
+exit 0
+

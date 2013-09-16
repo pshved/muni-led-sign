@@ -32,6 +32,9 @@ OptionParser.new do |opts|
   #Weather
   opts.on('--weather-url [URL]', "The url from weather.gov to fetch a weather from.  Click on Tabular Weather, and choose XML.") {|v| options[:weather_xml] = v}
   opts.on('--weather-hour [HOUR]', "Hour of the day (0..23) to get the weather of") {|v| options[:weather_hour] = v}
+
+  # Darkening
+  opts.on('--dark-file [FILENAME]', "Turn off the sign instead of updating, if FILENAME exists") {|v| options[:dark_file] = v}
 end.parse!
 
 # Returns array of predictions for this route, direction, and stop in UTC times.
@@ -130,7 +133,7 @@ end
 
 while true
   begin
-    update_sign(font, options)
+    darken_if_necessary(options) or update_sign(font, options)
   rescue => e
     $stderr.puts "Well, we continue despite this error: #{e}\n#{e.backtrace.join("\n")}"
   end

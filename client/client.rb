@@ -14,6 +14,9 @@ OptionParser.new do |opts|
 
   opts.on('--stopId [STOP_NAME]', "Stop to watch") {|v| options[:stop] = v}
   opts.on('--update-interval SECONDS', Integer, "Update sign each number of seconds") {|v| options[:update_interval] = v}
+
+  # Darkening
+  opts.on('--dark-file [FILENAME]', "Turn off the sign instead of updating, if FILENAME exists") {|v| options[:dark_file] = v}
 end.parse!
 
 
@@ -72,7 +75,7 @@ end
 
 while true
   begin
-    update_sign(font, options)
+    darken_if_necessary(options) or update_sign(font, options)
   rescue => e
     $stderr.puts "Well, we continue despite this error: #{e}\n#{e.backtrace.join("\n")}"
   end

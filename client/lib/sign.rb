@@ -32,3 +32,15 @@ class Array
   end
 end
 
+# Darken the sign if dark_file exists.
+# Return true if sign has been darkened.
+def darken_if_necessary(options)
+  dark_file = options[:dark_file]
+  if dark_file && File.exists?(dark_file)
+    # We can't "turn off" the sign, but we can send it an empty picture.
+    LED_Sign.pic("0\n")
+    return true
+  end
+  return false
+end
+
