@@ -8,13 +8,34 @@ http://coldattic.info/shvedsky/pro/blogs/a-foo-walks-into-a-bar/posts/98
 Installation
 ============
 
-You need Perl and Ruby 1.9 with gem command.
+Before you are able to run the sign software, you need to install Perl
+and Ruby 1.9 with its "gem" package manager.
 
     $ sudo apt-get install ruby1.9 gem1.9
     $ sudo cpan Device::MiniLED
     $ gem install --user-install ./vendor/muni-0.0.6.gem
 
-To run on startup:
+To execute the program at startup:
     $ sudo cp contrib/munisign /etc/init.d
+    $ nano /etc/init.d/munisign   # Edit file to adjust command line
     $ sudo update-rc.d munisign defaults
+
+
+Running
+=======
+
+There are two executable files in the package:
+
+    - client/client.rb - Muni sign as seen on Muni stops;
+    - contrib/morning_room.rb - morning dashboard.
+
+Call each program with '--help' to see the complete list of options, e.g.
+"./client/client.rb --help".   Sample command lines:
+
+    ./client/client.rb --update-interval 30 --stopId 16995
+
+    ./contrib/morning_room.rb --update-interval 30 \
+    	--route 30 --direction outbound --stop 'Townsend & 4th'  \
+    	--weather-url 'http://forecast.weather.gov/MapClick.php?lat=37.776905&lon=-122.395012&FcstType=digitalDWML'  \
+    	--weather-hour 20
 
