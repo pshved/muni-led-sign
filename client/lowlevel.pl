@@ -16,10 +16,12 @@ my $sign=Device::MiniLED->new(devicetype => "sign");
 
 my $type = 'text';
 my $speed = 1;
+my $effect = 'hold';
 
 my $options_result = GetOptions(
   'type=s' => \$type,
-  'speed=i' => \$type,
+  'speed=i' => \$speed,
+  'effect=s' => \$effect,
 );
 
 my $height = 0;
@@ -54,7 +56,7 @@ for my $message_data (@messages) {
     );
     $sign->addMsg(
       data => $pic,
-      effect => 'hold',
+      effect => $effect,
       # For multiple messages, the speed seems to control transition speed in
       # multi-message mode.
       speed => $speed,
